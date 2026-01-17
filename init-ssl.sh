@@ -56,9 +56,7 @@ if [ $? -eq 0 ]; then
     
     # Восстанавливаем HTTPS конфигурацию
     echo "📝 Переключение на HTTPS конфигурацию..."
-    git checkout nginx/nginx.conf 2>/dev/null || {
-        # Если git недоступен, создаем HTTPS конфиг вручную
-        cat > nginx/nginx.conf << 'EOF'
+    cat > nginx/nginx.conf << 'EOF'
 # HTTP server - redirect to HTTPS
 server {
     listen 80;
@@ -73,11 +71,13 @@ server {
 
 # HTTPS server
 server {
-    listen 443 ssl http2;
+    listen 443 ssl;
     server_name 404tears.kz www.404tears.kz;
     ssl_certificate /etc/letsencrypt/live/404tears.kz/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/404tears.kz/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
     root /usr/share/nginx/html;
     index index.html;
     location / {
@@ -92,7 +92,6 @@ server {
     }
 }
 EOF
-    }
     
     # Перезапускаем frontend с SSL
     echo "🔄 Перезапуск frontend с SSL..."
