@@ -7,7 +7,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    minify: 'terser',
+    minify: 'esbuild', // Используем esbuild вместо terser (встроен в Vite)
     rollupOptions: {
       output: {
         manualChunks: {
