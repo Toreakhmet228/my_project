@@ -1,0 +1,24 @@
+.product-page-loading,
+.product-page-error {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.product-page-loading p,
+.product-page-error p {
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.product-page-back-button {
+  color: #2563eb;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+}
+
+.product-page-back-button:hover {
+  color: #1d4ed8;
+}

@@ -1,0 +1,63 @@
+version: "3.9"
+
+# Скопируйте этот файл в docker-compose.prod.yml и заполните реальные значения
+
+services:
+  db:
+    image: postgres:16
+    container_name: shop_postgres_prod
+    restart: always
+    environment:
+      POSTGRES_USER: your_db_user          # ИЗМЕНИТЕ
+      POSTGRES_PASSWORD: your_strong_password  # ИЗМЕНИТЕ
+      POSTGRES_DB: shop
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    networks:
+      - shop_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U your_db_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: shop_backend_prod
+    restart: always
+    environment:
+      DATABASE_URL: postgresql+psycopg2://your_db_user:your_strong_password@db:5432/shop
+      ALLOWED_ORIGINS: https://404tears.kz,https://www.404tears.kz
+      ENVIRONMENT: production
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - shop_network
+    volumes:
+      - ./app/logs:/app/logs
+
+  frontend:
+    build:
+      context: ./shop
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=https://api.404tears.kz/api  # Или https://404tears.kz/api если API на том же домене
+    container_name: shop_frontend_prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    networks:
+      - shop_network
+
+networks:
+  shop_network:
+    driver: bridge
+
+volumes:
+  postgres_data_prod:
