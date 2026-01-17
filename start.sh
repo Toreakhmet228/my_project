@@ -6,6 +6,19 @@ set -e
 
 echo "🚀 Запуск интернет-магазина 404tears.kz"
 
+# Проверяем какая версия docker-compose установлена
+if command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+elif docker compose version &> /dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker compose"
+else
+    echo "❌ Docker Compose не найден!"
+    echo "Установите docker-compose: sudo apt install docker-compose"
+    exit 1
+fi
+
+echo "Используется: $DOCKER_COMPOSE_CMD"
+
 # Проверяем наличие .env файла
 if [ ! -f .env ]; then
     echo "⚠️  Файл .env не найден. Создаю из примера..."
@@ -37,20 +50,20 @@ fi
 echo "📦 Сборка и запуск Docker контейнеров..."
 
 # Собираем и запускаем контейнеры
-docker-compose -f docker-compose.prod.yml up -d --build
+$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml up -d --build
 
 echo "⏳ Ожидание запуска сервисов..."
 sleep 15
 
 # Проверяем статус
 echo "📊 Статус контейнеров:"
-docker-compose -f docker-compose.prod.yml ps
+$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml ps
 
 # Добавляем товары если база пустая
 echo "🛍️  Проверка товаров в базе..."
 sleep 5
 
-PRODUCTS_COUNT=$(docker-compose -f docker-compose.prod.yml exec -T backend python -c "
+PRODUCTS_COUNT=$($DOCKER_COMPOSE_CMD -f docker-compose.prod.yml exec -T backend python -c "
 from app.database import SessionLocal
 from app.models import Product
 try:
@@ -80,7 +93,7 @@ else
 fi
 echo ""
 echo "📝 Полезные команды:"
-echo "   - Просмотр логов: docker-compose -f docker-compose.prod.yml logs -f"
-echo "   - Остановка: docker-compose -f docker-compose.prod.yml down"
-echo "   - Перезапуск: docker-compose -f docker-compose.prod.yml restart"
+echo "   - Просмотр логов: $DOCKER_COMPOSE_CMD -f docker-compose.prod.yml logs -f"
+echo "   - Остановка: $DOCKER_COMPOSE_CMD -f docker-compose.prod.yml down"
+echo "   - Перезапуск: $DOCKER_COMPOSE_CMD -f docker-compose.prod.yml restart"
 echo ""

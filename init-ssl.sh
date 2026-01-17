@@ -4,6 +4,16 @@
 
 set -e
 
+# Проверяем какая версия docker-compose установлена
+if command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+elif docker compose version &> /dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker compose"
+else
+    echo "❌ Docker Compose не найден!"
+    exit 1
+fi
+
 echo "🔒 Настройка SSL для 404tears.kz"
 
 # Загружаем переменные из .env
@@ -24,7 +34,7 @@ cp nginx/nginx-http.conf nginx/nginx.conf
 
 # Перезапускаем frontend
 echo "🔄 Перезапуск frontend..."
-docker-compose -f docker-compose.prod.yml restart frontend || docker-compose -f docker-compose.prod.yml up -d frontend
+$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml restart frontend || $DOCKER_COMPOSE_CMD -f docker-compose.prod.yml up -d frontend
 
 # Ждем пока nginx запустится
 echo "⏳ Ожидание запуска nginx..."
@@ -32,7 +42,7 @@ sleep 10
 
 # Получаем SSL сертификат
 echo "📜 Получение SSL сертификата от Let's Encrypt..."
-docker-compose -f docker-compose.prod.yml run --rm certbot certonly \
+$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml run --rm certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \
     --email $EMAIL \
@@ -86,11 +96,11 @@ EOF
     
     # Перезапускаем frontend с SSL
     echo "🔄 Перезапуск frontend с SSL..."
-    docker-compose -f docker-compose.prod.yml restart frontend
+    $DOCKER_COMPOSE_CMD -f docker-compose.prod.yml restart frontend
     
     # Запускаем certbot для автоматического обновления
     echo "🔄 Запуск автоматического обновления сертификатов..."
-    docker-compose -f docker-compose.prod.yml up -d certbot
+    $DOCKER_COMPOSE_CMD -f docker-compose.prod.yml up -d certbot
     
     echo ""
     echo "✅ SSL успешно настроен!"

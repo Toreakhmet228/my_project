@@ -7,7 +7,7 @@ interface Props {
 
 export default function SearchBar({ onSearch }: Props) {
   const [value, setValue] = useState("");
-  const timerRef = useRef<number>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     if (timerRef.current) {
