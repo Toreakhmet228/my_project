@@ -39,14 +39,6 @@ export $(cat .env | grep -v '^#' | xargs)
 
 DOMAIN=${DOMAIN:-404tears.kz}
 
-# Используем HTTP конфигурацию если SSL сертификатов нет
-if [ ! -d "./certbot_data/live/$DOMAIN" ] 2>/dev/null; then
-    echo "📝 Используется HTTP конфигурация (SSL будет настроен позже)"
-    cp nginx/nginx-http.conf nginx/nginx.conf
-else
-    echo "🔒 Используется HTTPS конфигурация"
-fi
-
 echo "📦 Сборка и запуск Docker контейнеров..."
 
 # Собираем и запускаем контейнеры
@@ -84,13 +76,8 @@ fi
 echo ""
 echo "✅ Готово!"
 echo ""
-echo "🌐 Сайт доступен по адресам:"
-echo "   - HTTP:  http://$DOMAIN"
-if [ -d "./certbot_data/live/$DOMAIN" ] 2>/dev/null; then
-    echo "   - HTTPS: https://$DOMAIN"
-else
-    echo "   - Для HTTPS запустите: ./init-ssl.sh"
-fi
+echo "🌐 Сайт доступен по адресу:"
+echo "   - http://$DOMAIN"
 echo ""
 echo "📝 Полезные команды:"
 echo "   - Просмотр логов: $DOCKER_COMPOSE_CMD -f docker-compose.prod.yml logs -f"
